@@ -1,7 +1,7 @@
 # Личный проект «Шесть городов»
 
-* Студент: [Алексей Жила](https://up.htmlacademy.ru/nodejs-api-individual/2/user/1168065).
-* Наставник: `Неизвестно`.
+- Студент: [Алексей Жила](https://up.htmlacademy.ru/nodejs-api-individual/2/user/1168065).
+- Наставник: [Глеб Алфутин](https://htmlacademy.ru/profile/id2668675).
 
 ---
 
