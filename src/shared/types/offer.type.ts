@@ -18,8 +18,7 @@ export type Offer = {
   rooms: number; // 1–8
   guests: number; // 1–10
   price: number; // 100–100000
-  amenities: Facility[];
-  author: User;
-  commentsCount: number; // рассчитывается автоматически
+  facilities: Facility[];
+  host: User;
   location: Coordinates;
 };
