@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { FileReader } from './file-reader.interface.js';
-import { City, Facility, HousingType, Offer } from '../types/index.js';
+import { City, Offer, parseFacility } from '../types/index.js';
+import { booleanFromString } from '../helpers/boolean-from-string.js';
+import { parseHousing } from '../helpers/parse-housing.js';
 
 export class TSVFileReader implements FileReader {
   private rawData = '';
@@ -41,17 +43,17 @@ export class TSVFileReader implements FileReader {
           publishDate: new Date(publishDate),
           city: City[city as keyof typeof City],
           previewImage,
-          images: images.split(';').map((img) => img),
-          isPremium: Boolean(isPremium),
-          isFavorite: Boolean(isFavorite),
-          rating: parseInt(rating, 10),
-          type: HousingType[type as keyof typeof HousingType],
+          images: images.split(';'),
+          isPremium: booleanFromString(isPremium),
+          isFavorite: booleanFromString(isFavorite),
+          rating: parseFloat(rating),
+          type: parseHousing(type),
           rooms: parseInt(rooms, 10),
           guests: parseInt(guests, 10),
           price: parseInt(price, 10),
           facilities: facilities
             .split(';')
-            .map((facility) => Facility[facility as keyof typeof Facility]),
+            .map((facility) => parseFacility(facility)),
           host: {
             name,
             email,
