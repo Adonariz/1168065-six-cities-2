@@ -1,8 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { FileReader } from './file-reader.interface.js';
-import { City, Offer, parseFacility } from '../types/index.js';
+import { City, Offer, parseFacility, parseHousing } from '../types/index.js';
 import { booleanFromString } from '../helpers/boolean-from-string.js';
-import { parseHousing } from '../helpers/parse-housing.js';
 
 export class TSVFileReader implements FileReader {
   private rawData = '';

@@ -1,2 +1,1 @@
-export const booleanFromString = (string: string) =>
-  string.toLowerCase() === 'true';
+export const booleanFromString = (str: string) => str.toLowerCase() === 'true';
