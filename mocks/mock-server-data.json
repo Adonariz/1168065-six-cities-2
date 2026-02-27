@@ -75,43 +75,21 @@
       "avatar-5.jpg",
       "avatar-6.png"
     ],
-    "hosts": [
-      {
-        "name": "John Smith",
-        "email": "john.smith@example.com",
-        "avatar": "avatar-1.jpg",
-        "type": "обычный"
-      },
-      {
-        "name": "Emma Johnson",
-        "email": "emma.johnson@example.com",
-        "avatar": "avatar-2.png",
-        "type": "pro"
-      },
-      {
-        "name": "Michael Brown",
-        "email": "michael.brown@example.com",
-        "avatar": "avatar-3.jpg",
-        "type": "обычный"
-      },
-      {
-        "name": "Sophia Wilson",
-        "email": "sophia.wilson@example.com",
-        "avatar": "avatar-4.png",
-        "type": "pro"
-      },
-      {
-        "name": "Daniel Miller",
-        "email": "daniel.miller@example.com",
-        "avatar": "avatar-5.jpg",
-        "type": "обычный"
-      },
-      {
-        "name": "Olivia Davis",
-        "email": "olivia.davis@example.com",
-        "avatar": "avatar-6.png",
-        "type": "pro"
-      }
+    "users": [
+      "John Smith",
+      "Emma Johnson",
+      "Michael Brown",
+      "Sophia Wilson",
+      "Daniel Miller",
+      "Olivia Davis"
+    ],
+    "emails": [
+      "john.smith@example.com",
+      "emma.johnson@example.com",
+      "michael.brown@example.com",
+      "sophia.wilson@example.com",
+      "daniel.miller@example.com",
+      "olivia.davis@example.com"
     ]
   }
 }
