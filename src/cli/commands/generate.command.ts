@@ -3,6 +3,7 @@ import { TSVOfferGenerator } from '../../shared/libs/offer-generator/tsv-offer-g
 import { MockServerData } from '../../shared/types/mock-server-data.type.js';
 import { Command } from './command.interface.js';
 import got from 'got';
+import chalk from 'chalk';
 
 export class GenerateCommand implements Command {
   private initialData: MockServerData;
@@ -36,12 +37,12 @@ export class GenerateCommand implements Command {
     try {
       await this.load(url);
       await this.write(filepath, offerCount);
-      console.info(`File ${filepath} was created`);
+      console.info(chalk.greenBright(`File ${filepath} was created`));
     } catch (error: unknown) {
-      console.error('Failed to generate data');
+      console.error(chalk.redBright('Failed to generate data'));
 
       if (error instanceof Error) {
-        console.error(error.message);
+        console.error(chalk.redBright(error.message));
       }
     }
   }
