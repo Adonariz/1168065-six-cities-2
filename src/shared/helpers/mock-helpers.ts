@@ -6,6 +6,10 @@ export function generateRandomValue(
   return +(Math.random() * (max - min) + min).toFixed(numAfterDigit);
 }
 
+export function generateRandomBoolean() {
+  return Math.random() < 0.5;
+}
+
 export function getRandomItems<T>(items: T[]): T[] {
   const startPosition = generateRandomValue(0, items.length - 1);
   const endPosition =
