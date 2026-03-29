@@ -90,7 +90,7 @@ export class ImportCommand implements Command {
     dbname: string,
     salt: string,
   ): Promise<void> {
-    this.logger.info('Starting import');
+    this.logger.info('Starting import...');
 
     const uri = getMongoURI(login, password, host, DEFAULT_DB_PORT, dbname);
     this.salt = salt;
