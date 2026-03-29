@@ -1,8 +1,9 @@
+import { Ref } from '@typegoose/typegoose';
 import { City } from './city.enum.js';
 import { Coordinates } from './coordinates.type.js';
 import { Facility } from './facility.type.js';
 import { Housing } from './housing.type.js';
-import { User } from './user.type.js';
+import { UserEntity } from '../modules/user/index.js';
 
 export type Offer = {
   title: string; // 10–100
@@ -19,6 +20,6 @@ export type Offer = {
   guests: number; // 1–10
   price: number; // 100–100000
   facilities: Facility[];
-  host: User;
+  userId: Ref<UserEntity>;
   location: Coordinates;
 };
