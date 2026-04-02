@@ -22,39 +22,73 @@ paths:
       tags:
         - users
       summary: Регистрация пользователя
-      description: Регистрирует нового пользователя.
+      description: Регистрирует нового пользователя
 
       requestBody:
-        description: Информация для создания нового пользователя.
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/createUser'
-        required: true
+              $ref: '#/components/schemas/CreateUser'
 
       responses:
-        "201":
-          description: Пользователь зарегистрирован. Объект пользователя.
+        '201':
+          description: Пользователь успешно создан
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/user'
+                $ref: '#/components/schemas/User'
 
-        "409":
-          description: Пользователь с таким email уже существует.
+        '409':
+          description: Пользователь с таким email уже существует
+
+        '422':
+          description: Ошибка валидации данных
 
   /users/login:
     post:
       tags:
         - users
       summary: Авторизация пользователя
-      description: Авторизует пользователя на основе логина и пароля
+      description: Авторизует пользователя на основе логина (email) и пароля
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginUser'
+
+      responses:
+        '200':
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+
+        '401':
+          description: Неверный логин или пароль
 
     get:
       tags:
         - users
       summary: Проверка состояния пользователя
       description: Возвращает информацию по авторизованному пользователю
+
+      security:
+        - bearerAuth: []
+
+      responses:
+        '200':
+          description: Пользователь авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+        '401':
+          description: Пользователь не авторизован
 
   /users/{userId}/avatar:
     post:
@@ -63,32 +97,84 @@ paths:
       summary: Загрузить изображение аватара
       description: Загружает изображение аватара пользователя. Изображение
         аватара должно быть в формате `png` или `jpg`.
+      responses:
+        '200':
+          description: Аватар успешно загружен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+        '400':
+          description: Неверный формат файла
+
+        '401':
+          description: Не авторизован
+
+  /users/logout:
+    post:
+      tags:
+        - users
+      summary: Выход пользователя
+      description: Завершает пользовательскую сессию
+
+      responses:
+        '204':
+          description: Успешный выход
+
+        '401':
+          description: Пользователь не авторизован
 
 components:
   schemas:
-    createUser:
+    CreateUser:
       type: object
-
+      required:
+        - email
+        - firstname
+        - password
+        - type
       properties:
         email:
           type: string
-          example: johnappleseed@example.com
+          format: email
 
         firstname:
           type: string
-          example: John
+          minLength: 1
+          maxLength: 15
 
         lastname:
           type: string
-          example: Appleseed
+          minLength: 1
+          maxLength: 15
+
+        password:
+          type: string
+          minLength: 6
+          maxLength: 12
+
+        type:
+          type: string
+          enum: [pro, base]
+
+    LoginUser:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: john@example.com
 
         password:
           type: string
           example: 123456
 
-    user:
+    User:
       type: object
-
       properties:
         id:
           type: string
@@ -96,4 +182,28 @@ components:
 
         email:
           type: string
-          example: johnappleseed@example.com
+          example: john@example.com
+
+        firstname:
+          type: string
+          example: John
+
+        lastname:
+          type: string
+          example: Doe
+
+        avatarUrl:
+          type: string
+          example: /uploads/avatar.jpg
+
+        type:
+          type: string
+          enum: [pro, base]
+          example: base
+
+    AuthToken:
+      type: object
+      properties:
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
