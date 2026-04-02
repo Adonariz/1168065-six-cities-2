@@ -125,6 +125,65 @@ paths:
         '401':
           description: Пользователь не авторизован
 
+  /offers/{offerId}/comments:
+    get:
+      tags:
+        - comments
+      summary: Получить список комментариев
+      description: Возвращает до 50 последних комментариев, отсортированных по убыванию даты
+
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Список комментариев
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 50
+                items:
+                  $ref: '#/components/schemas/Comment'
+
+    post:
+      tags:
+        - comments
+      summary: Добавить комментарий
+      description: Добавляет новый комментарий к предложению
+
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateComment'
+
+      responses:
+        '201':
+          description: Комментарий успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+
+        '401':
+          description: Не авторизован
+
+        '422':
+          description: Ошибка валидации данных
+
 components:
   schemas:
     CreateUser:
@@ -207,3 +266,52 @@ components:
         token:
           type: string
           example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    Comment:
+      type: object
+      required:
+        - id
+        - text
+        - date
+        - rating
+        - user
+      properties:
+        id:
+          type: string
+          example: 64f1c2e9a2b3c4d5e6f7a8b9
+
+        text:
+          type: string
+          minLength: 5
+          maxLength: 1024
+          example: Отличное место, очень понравилось!
+
+        date:
+          type: string
+          format: date-time
+          example: 2025-03-31T12:00:00Z
+
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 5
+
+        user:
+          $ref: '#/components/schemas/User'
+
+    CreateComment:
+      type: object
+      required:
+        - text
+        - rating
+      properties:
+        text:
+          type: string
+          minLength: 5
+          maxLength: 1024
+
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
