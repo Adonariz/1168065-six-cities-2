@@ -125,6 +125,144 @@ paths:
         '401':
           description: Пользователь не авторизован
 
+  /offers:
+    get:
+      tags:
+        - offers
+      summary: Получить список предложений
+      description: |
+        Возвращает список предложений (по умолчанию до 60).
+        Отсортировано по дате публикации (убывание).
+
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            example: 60
+
+      responses:
+        '200':
+          description: Список предложений
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OfferPreview'
+
+    post:
+      tags:
+        - offers
+      summary: Создать предложение
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOffer'
+
+      responses:
+        '201':
+          description: Предложение создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+
+        '401':
+          description: Не авторизован
+
+        '422':
+          description: Ошибка валидации
+
+  /offers/{offerId}:
+    get:
+      tags:
+        - offers
+      summary: Получить предложение
+      description: Возвращает полную информацию о предложении
+
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Предложение
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+
+        '404':
+          description: Предложение не найдено
+
+    patch:
+      tags:
+        - offers
+      summary: Редактировать предложение
+
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOffer'
+
+      responses:
+        '200':
+          description: Обновлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+
+        '401':
+          description: Не авторизован
+
+        '403':
+          description: Чужое предложение
+
+        '404':
+          description: Не найдено
+
+    delete:
+      tags:
+        - offers
+      summary: Удалить предложение
+
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '204':
+          description: Удалено
+
+        '401':
+          description: Не авторизован
+
+        '403':
+          description: Доступ запрещен
+
+        '404':
+          description: Не найдено
+
   /offers/{offerId}/comments:
     get:
       tags:
@@ -315,3 +453,256 @@ components:
           type: integer
           minimum: 1
           maximum: 5
+
+    Coordinates:
+      type: object
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          type: number
+          example: 52.370216
+
+        longitude:
+          type: number
+          example: 4.895168
+
+    City:
+      type: object
+      required:
+        - name
+        - location
+      properties:
+        name:
+          type: string
+          enum: [Paris, Cologne, Brussels, Amsterdam, Hamburg, Dusseldorf]
+
+        location:
+          $ref: '#/components/schemas/Coordinates'
+
+    Offer:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - publishDate
+        - city
+        - previewImage
+        - images
+        - isPremium
+        - isFavorite
+        - rating
+        - type
+        - rooms
+        - guests
+        - price
+        - facilities
+        - host
+        - commentsCount
+        - location
+      properties:
+        id:
+          type: string
+
+        title:
+          type: string
+          minLength: 10
+          maxLength: 100
+
+        description:
+          type: string
+          minLength: 20
+          maxLength: 1024
+
+        publishDate:
+          type: string
+          format: date-time
+
+        city:
+          $ref: '#/components/schemas/City'
+
+        previewImage:
+          type: string
+
+        images:
+          type: array
+          minItems: 6
+          maxItems: 6
+          items:
+            type: string
+
+        isPremium:
+          type: boolean
+
+        isFavorite:
+          type: boolean
+
+        rating:
+          type: number
+          minimum: 0
+          maximum: 5
+          multipleOf: 0.1
+
+        type:
+          type: string
+          enum: [apartment, house, room, hotel]
+
+        rooms:
+          type: integer
+          minimum: 1
+          maximum: 8
+
+        guests:
+          type: integer
+          minimum: 1
+          maximum: 10
+
+        price:
+          type: integer
+          minimum: 100
+          maximum: 100000
+
+        facilities:
+          type: array
+          items:
+            type: string
+            enum:
+              - Breakfast
+              - Air conditioning
+              - Laptop friendly workspace
+              - Baby seat
+              - Washer
+              - Towels
+              - Fridge
+
+        host:
+          $ref: '#/components/schemas/User'
+
+        commentsCount:
+          type: integer
+          example: 12
+
+        location:
+          $ref: '#/components/schemas/Coordinates'
+
+    OfferPreview:
+      type: object
+      required:
+        - id
+        - title
+        - type
+        - price
+        - city
+        - previewImage
+        - isPremium
+        - isFavorite
+        - publishDate
+        - rating
+        - commentsCount
+      properties:
+        id:
+          type: string
+
+        title:
+          type: string
+
+        type:
+          type: string
+          enum: [apartment, house, room, hotel]
+
+        price:
+          type: integer
+
+        city:
+          $ref: '#/components/schemas/City'
+
+        previewImage:
+          type: string
+
+        isPremium:
+          type: boolean
+
+        isFavorite:
+          type: boolean
+
+        publishDate:
+          type: string
+          format: date-time
+
+        rating:
+          type: number
+
+        commentsCount:
+          type: integer
+
+    CreateOffer:
+      type: object
+      required:
+        - title
+        - description
+        - city
+        - previewImage
+        - images
+        - isPremium
+        - type
+        - rooms
+        - guests
+        - price
+        - facilities
+        - location
+      properties:
+        title:
+          type: string
+          minLength: 10
+          maxLength: 100
+
+        description:
+          type: string
+          minLength: 20
+          maxLength: 1024
+
+        city:
+          type: string
+          enum: [Paris, Cologne, Brussels, Amsterdam, Hamburg, Dusseldorf]
+
+        previewImage:
+          type: string
+
+        images:
+          type: array
+          minItems: 6
+          maxItems: 6
+          items:
+            type: string
+
+        isPremium:
+          type: boolean
+
+        type:
+          type: string
+          enum: [apartment, house, room, hotel]
+
+        bedrooms:
+          type: integer
+          minimum: 1
+          maximum: 8
+
+        guests:
+          type: integer
+          minimum: 1
+          maximum: 10
+
+        price:
+          type: integer
+          minimum: 100
+          maximum: 100000
+
+        facilities:
+          type: array
+          items:
+            type: string
+
+        location:
+          $ref: '#/components/schemas/Coordinates'
