@@ -322,6 +322,109 @@ paths:
         '422':
           description: Ошибка валидации данных
 
+  /offers/premium:
+    get:
+      tags:
+        - offers
+      summary: Премиальные предложения по городу
+      description: |
+        Возвращает до 3 премиальных предложений для указанного города.
+        Сортировка: по дате публикации (убывание).
+
+      parameters:
+        - name: city
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [Paris, Cologne, Brussels, Amsterdam, Hamburg, Dusseldorf]
+
+      responses:
+        '200':
+          description: Список премиальных предложений
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 3
+                items:
+                  $ref: '#/components/schemas/OfferPreview'
+
+  /offers/favorites:
+    get:
+      tags:
+        - offers
+      summary: Получить избранные предложения
+      description: Возвращает список предложений, добавленных в избранное
+
+      responses:
+        '200':
+          description: Список избранных предложений
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OfferPreview'
+
+        '401':
+          description: Не авторизован
+
+  /offers/{offerId}/favorite:
+    post:
+      tags:
+        - offers
+      summary: Добавить предложение в избранное
+      description: Добавляет предложение в список избранных
+
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Добавлено в избранное
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+
+        '401':
+          description: Не авторизован
+
+        '404':
+          description: Предложение не найдено
+
+    delete:
+      tags:
+        - offers
+      summary: Удалить предложение из избранного
+      description: Удаляет предложение из списка избранных
+
+      parameters:
+        - name: offerId
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+        '200':
+          description: Удалено из избранного
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+
+        '401':
+          description: Не авторизован
+
+        '404':
+          description: Предложение не найдено
+
 components:
   schemas:
     CreateUser:
