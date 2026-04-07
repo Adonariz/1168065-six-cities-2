@@ -1,0 +1,588 @@
+openapi: 3.1.0
+info:
+  title: API сервер для проекта «Шесть городов».
+  description: |-
+    * Список ресурсов и маршрутов сервера «Шесть городов».
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  version: 2.0.0
+
+tags:
+  - name: offers
+    description: Действия с объявлениями.
+  - name: comments
+    description: Действия с комментариями.
+  - name: users
+    description: Действия с пользователем.
+
+paths:
+  /users/register:
+    post:
+      tags: [users]
+      summary: Регистрация пользователя
+      description: Регистрирует нового пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUser'
+      responses:
+        '201':
+          description: Пользователь создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '409':
+          description: Пользователь уже существует
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /users/login:
+    post:
+      tags: [users]
+      summary: Авторизация пользователя
+      description: Авторизует пользователя на основе логина (email) и пароля
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginUser'
+      responses:
+        '200':
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthToken'
+        '401':
+          description: Неверный логин или пароль
+
+    get:
+      tags: [users]
+      summary: Проверка авторизации
+      description: Возвращает информацию по авторизованному пользователю
+      responses:
+        '200':
+          description: Пользователь авторизован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/logout:
+    post:
+      tags: [users]
+      summary: Выход пользователя
+      description: Завершает пользовательскую сессию
+      responses:
+        '204':
+          description: Успешный выход
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/{userId}/avatar:
+    post:
+      tags: [users]
+      summary: Загрузка аватара
+      description: Загружает изображение аватара пользователя. Изображение
+        аватара должно быть в формате `png` или `jpg`.
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        '200':
+          description: Аватар загружен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Неверный формат файла
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /offers:
+    get:
+      tags: [offers]
+      summary: Получить список предложений
+      description: |
+        Возвращает список предложений (по умолчанию до 60).
+        Отсортировано по дате публикации (по убыванию).
+      parameters:
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: Список предложений
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OfferPreview'
+
+    post:
+      tags: [offers]
+      summary: Создать предложение
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOffer'
+      responses:
+        '201':
+          description: Предложение создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /offers/{offerId}:
+    get:
+      tags: [offers]
+      summary: Получить предложение
+      description: Возвращает полную информацию о предложении
+      parameters:
+        - $ref: '#/components/parameters/offerId'
+      responses:
+        '200':
+          description: Предложение
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [offers]
+      summary: Обновить предложение
+      description: Обновляет информацию о предложении
+      parameters:
+        - $ref: '#/components/parameters/offerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOffer'
+      responses:
+        '200':
+          description: Обновлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Доступ запрещён
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [offers]
+      summary: Удалить предложение
+      parameters:
+        - $ref: '#/components/parameters/offerId'
+      responses:
+        '204':
+          description: Удалено
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Доступ запрещён
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /offers/{offerId}/comments:
+    get:
+      tags: [comments]
+      summary: Получить список комментариев
+      description: Возвращает до 50 последних комментариев, отсортированных по убыванию даты
+      parameters:
+        - $ref: '#/components/parameters/offerId'
+      responses:
+        '200':
+          description: Список комментариев
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 50
+                items:
+                  $ref: '#/components/schemas/Comment'
+
+    post:
+      tags: [comments]
+      summary: Добавить комментарий
+      description: Добавляет новый комментарий к предложению
+      parameters:
+        - $ref: '#/components/parameters/offerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateComment'
+      responses:
+        '201':
+          description: Комментарий создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /offers/premium:
+    get:
+      tags: [offers]
+      summary: Премиальные предложения по городу
+      description: |
+        Возвращает до 3 премиальных предложений для указанного города.
+        Сортировка: по дате публикации (убывание).
+      parameters:
+        - $ref: '#/components/parameters/city'
+      responses:
+        '200':
+          description: Список премиальных предложений
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 3
+                items:
+                  $ref: '#/components/schemas/OfferPreview'
+
+  /offers/favorites:
+    get:
+      tags: [offers]
+      summary: Избранные предложения
+      description: Возвращает список предложений, добавленных в избранное
+      responses:
+        '200':
+          description: Список избранных предложений
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OfferPreview'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /offers/{offerId}/favorite:
+    post:
+      tags: [offers]
+      summary: Добавить предложение в избранное
+      description: Добавляет предложение в список избранных
+      parameters:
+        - $ref: '#/components/parameters/offerId'
+      responses:
+        '200':
+          description: Добавлено в избранное
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [offers]
+      summary: Удалить предложение из избранного
+      description: Удаляет предложение из списка избранных
+      parameters:
+        - $ref: '#/components/parameters/offerId'
+      responses:
+        '200':
+          description: Удалено из избранного
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Offer'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  parameters:
+    offerId:
+      name: offerId
+      in: path
+      required: true
+      schema:
+        type: string
+
+    userId:
+      name: userId
+      in: path
+      required: true
+      schema:
+        type: string
+
+    limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        default: 60
+
+    city:
+      name: city
+      in: query
+      required: true
+      schema:
+        $ref: '#/components/schemas/CityName'
+
+  responses:
+    Unauthorized:
+      description: Не авторизован
+
+    NotFound:
+      description: Не найдено
+
+    ValidationError:
+      description: Ошибка валидации данных
+
+  schemas:
+    CityName:
+      type: string
+      enum: [Paris, Cologne, Brussels, Amsterdam, Hamburg, Dusseldorf]
+
+    UserBase:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        firstname:
+          type: string
+        lastname:
+          type: string
+        avatarUrl:
+          type: string
+        type:
+          type: string
+          enum: [pro, base]
+
+    User:
+      allOf:
+        - type: object
+          required: [id]
+          properties:
+            id:
+              type: string
+        - $ref: '#/components/schemas/UserBase'
+
+    CreateUser:
+      type: object
+      required: [email, firstname, password, type]
+      properties:
+        email:
+          type: string
+          format: email
+        firstname:
+          type: string
+          minLength: 1
+          maxLength: 15
+        lastname:
+          type: string
+          minLength: 1
+          maxLength: 15
+        password:
+          type: string
+          minLength: 6
+          maxLength: 12
+        type:
+          type: string
+          enum: [pro, base]
+
+    LoginUser:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    AuthToken:
+      type: object
+      properties:
+        token:
+          type: string
+
+    Coordinates:
+      type: object
+      required: [latitude, longitude]
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
+
+    City:
+      type: object
+      required: [name, location]
+      properties:
+        name:
+          $ref: '#/components/schemas/CityName'
+        location:
+          $ref: '#/components/schemas/Coordinates'
+
+    Comment:
+      type: object
+      required: [id, text, date, rating, user]
+      properties:
+        id:
+          type: string
+        text:
+          type: string
+          minLength: 5
+          maxLength: 1024
+        date:
+          type: string
+          format: date-time
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        user:
+          $ref: '#/components/schemas/User'
+
+    CreateComment:
+      type: object
+      required: [text, rating]
+      properties:
+        text:
+          type: string
+          minLength: 5
+          maxLength: 1024
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+
+    OfferBase:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        city:
+          $ref: '#/components/schemas/City'
+        previewImage:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+        isPremium:
+          type: boolean
+        isFavorite:
+          type: boolean
+        rating:
+          type: number
+        type:
+          type: string
+          enum: [apartment, house, room, hotel]
+        rooms:
+          type: integer
+        guests:
+          type: integer
+        price:
+          type: integer
+        facilities:
+          type: array
+          items:
+            type: string
+        location:
+          $ref: '#/components/schemas/Coordinates'
+
+    Offer:
+      allOf:
+        - type: object
+          required: [id, publishDate, host, commentsCount]
+          properties:
+            id:
+              type: string
+            host:
+              $ref: '#/components/schemas/User'
+            publishDate:
+              type: string
+              format: date-time
+            commentsCount:
+              type: integer
+        - $ref: '#/components/schemas/OfferBase'
+
+    OfferPreview:
+      allOf:
+        - type: object
+          required: [id, publishDate, commentsCount]
+          properties:
+            id:
+              type: string
+            publishDate:
+              type: string
+              format: date-time
+            commentsCount:
+              type: integer
+        - type: object
+          properties:
+            title:
+              type: string
+            type:
+              type: string
+              enum: [apartment, house, room, hotel]
+            price:
+              type: integer
+            city:
+              $ref: '#/components/schemas/City'
+            previewImage:
+              type: string
+            isPremium:
+              type: boolean
+            isFavorite:
+              type: boolean
+            rating:
+              type: number
+
+    CreateOffer:
+      allOf:
+        - $ref: '#/components/schemas/OfferBase'
+        - type: object
+          required:
+            - title
+            - description
+            - city
+            - previewImage
+            - images
+            - isPremium
+            - type
+            - rooms
+            - guests
+            - price
+            - facilities
+            - location
+
+    UpdateOffer:
+      allOf:
+        - $ref: '#/components/schemas/OfferBase'
