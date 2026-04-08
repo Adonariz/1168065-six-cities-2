@@ -19,6 +19,6 @@ export interface OfferService {
     count: number,
   ): Promise<DocumentType<OfferEntity>[]>;
   findByFavorite(): Promise<DocumentType<OfferEntity>[]>;
-  recalcRating(offerId: string): Promise<DocumentType<OfferEntity> | null>;
+  calcRating(offerId: string): Promise<void>;
   exists(documentId: string): Promise<boolean>;
 }

@@ -10,6 +10,8 @@ import {
   DEFAULT_OFFER_COUNT,
   DEFAULT_PREMIUM_OFFER_COUNT,
 } from './offer.constants.js';
+import { CommentEntity } from '../comment/index.js';
+import { Types } from 'mongoose';
 
 @injectable()
 export class DefaultOfferService implements OfferService {
@@ -17,6 +19,8 @@ export class DefaultOfferService implements OfferService {
     @inject(Component.Logger) private readonly logger: Logger,
     @inject(Component.OfferModel)
     private readonly offerModel: types.ModelType<OfferEntity>,
+    @inject(Component.CommentModel)
+    private readonly commentModel: types.ModelType<CommentEntity>,
   ) {}
 
   public async create(
@@ -74,10 +78,29 @@ export class DefaultOfferService implements OfferService {
       .exec();
   }
 
-  public async recalcRating(
-    offerId: string,
-  ): Promise<types.DocumentType<OfferEntity> | null> {
-    return this.offerModel.findByIdAndUpdate(offerId);
+  async calcRating(offerId: string): Promise<void> {
+    const ratings = await this.commentModel.aggregate([
+      { $match: { offerId: new Types.ObjectId(offerId) } },
+      { $group: { _id: '$offerId', avgRating: { $avg: '$rating' } } },
+      {
+        $project: {
+          _id: 0,
+          avgRating: { $round: ['$avgRating', 1] },
+        },
+      },
+    ]);
+
+    const rating = ratings?.length ? ratings[0]?.avgRating : 0;
+
+    await this.offerModel
+      .findByIdAndUpdate(
+        offerId,
+        {
+          rating,
+        },
+        { new: true },
+      )
+      .exec();
   }
 
   public async findPremiumByCity(
